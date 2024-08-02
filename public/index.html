@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Music App</title>
+</head>
+<body>
+    <h1>Music App</h1>
+
+    <h2>Add Song</h2>
+    <form id="addSongForm">
+        <label for="title">Title:</label>
+        <input type="text" id="title" name="title" required><br>
+        <label for="artist">Artist:</label>
+        <input type="text" id="artist" name="artist" required><br>
+        <label for="album">Album:</label>
+        <input type="text" id="album" name="album"><br>
+        <label for="genre">Genre:</label>
+        <input type="text" id="genre" name="genre"><br>
+        <button type="submit">Add Song</button>
+    </form>
+
+    <p id="addSongMessage"></p>
+
+    <h2>Search Songs</h2>
+    <form id="searchSongForm">
+        <label for="query">Search:</label>
+        <input type="text" id="query" name="query" required><br>
+        <button type="submit">Search</button>
+    </form>
+
+    <ul id="searchResults"></ul>
+    <p id="searchMessage"></p>
+
+    <h2>Tag Song</h2>
+    <form id="tagSongForm">
+        <label for="songId">Song ID:</label>
+        <input type="number" id="songId" name="songId" required><br>
+        <label for="tags">Tags:</label>
+        <input type="text" id="tags" name="tags" required><br>
+        <button type="submit">Tag Song</button>
+    </form>
+
+    <p id="tagSongMessage"></p>
+
+    <script>
+        document.getElementById('addSongForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const title = document.getElementById('title').value;
+            const artist = document.getElementById('artist').value;
+            const album = document.getElementById('album').value;
+            const genre = document.getElementById('genre').value;
+
+            fetch('/add-song', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ title, artist, album, genre })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('addSongMessage').innerText = data.message;
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById('searchSongForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const query = document.getElementById('query').value;
+
+            fetch('/search-songs?q=' + query)
+            .then(response => response.json())
+            .then(data => {
+                const resultsList = document.getElementById('searchResults');
+                resultsList.innerHTML = '';
+                data.forEach(song => {
+                    const listItem = document.createElement('li');
+                    listItem.innerText = `${song.title} by ${song.artist}`;
+                    resultsList.appendChild(listItem);
+                });
+                document.getElementById('searchMessage').innerText = '';
+            })
+            .catch(error => {
+                document.getElementById('searchMessage').innerText = 'No songs found';
+                console.error('Error:', error);
+            });
+        });
+
+        document.getElementById('tagSongForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const songId = document.getElementById('songId').value;
+            const tags = document.getElementById('tags').value;
+
+            fetch('/tag-song', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ songId, tags })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('tagSongMessage').innerText = data.message;
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>
